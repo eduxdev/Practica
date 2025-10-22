@@ -1,0 +1,138 @@
+// Código para dbdiagram.io - Sistema de Asistencia Agrícola Inteligente
+// Copia y pega este código en https://dbdiagram.io
+
+Table users {
+  id int [pk, increment]
+  nombre varchar(100)
+  apellidos varchar(100)
+  correo varchar(255) [unique]
+  edad int
+  password varchar(255)
+  created_at timestamp [default: `now()`]
+  updated_at timestamp
+}
+
+Table parcelas {
+  id int [pk, increment]
+  user_id int [ref: > users.id]
+  nombre varchar(100)
+  descripcion text
+  area_hectareas decimal(10,4)
+  tipo_suelo varchar(100)
+  sistema_riego varchar(20) [note: 'goteo, aspersion, inundacion, ninguno']
+  activa boolean [default: true]
+  created_at timestamp [default: `now()`]
+  updated_at timestamp
+}
+
+Table cultivos {
+  id int [pk, increment]
+  parcela_id int [ref: > parcelas.id]
+  tipo_cultivo varchar(100) [note: 'maíz, trigo, tomate, etc.']
+  variedad varchar(100)
+  fecha_siembra date
+  fecha_cosecha_estimada date
+  fecha_cosecha_real date [null]
+  area_sembrada decimal(10,4) [note: 'hectáreas']
+  estado varchar(20) [note: 'sembrado, germinando, creciendo, floreciendo, fructificando, maduro, cosechado']
+  rendimiento_esperado decimal(10,2) [note: 'kg/hectárea']
+  rendimiento_real decimal(10,2) [null]
+  activo boolean [default: true]
+  created_at timestamp [default: `now()`]
+  updated_at timestamp
+}
+
+Table actividades_agricolas {
+  id int [pk, increment]
+  cultivo_id int [ref: > cultivos.id]
+  tipo_actividad varchar(30) [note: 'siembra, riego, fertilizacion, fumigacion, poda, cosecha, preparacion_suelo, control_plagas']
+  fecha_programada date
+  fecha_realizada date [null]
+  descripcion text
+  cantidad_aplicada decimal(10,2) [null, note: 'litros, kg, etc.']
+  costo decimal(10,2) [null]
+  estado varchar(20) [note: 'programada, en_proceso, completada, cancelada']
+  observaciones text
+  created_at timestamp [default: `now()`]
+  updated_at timestamp
+}
+
+Table datos_meteorologicos {
+  id int [pk, increment]
+  parcela_id int [ref: > parcelas.id]
+  fecha date
+  datos_clima json [note: 'Datos completos de la API meteorológica']
+  resumen_diario text [note: 'Resumen en lenguaje natural del clima del día']
+  alerta_clima boolean [default: false]
+  created_at timestamp [default: `now()`]
+  updated_at timestamp
+}
+
+Table transacciones_financieras {
+  id int [pk, increment]
+  cultivo_id int [ref: > cultivos.id]
+  actividad_id int [ref: > actividades_agricolas.id, null]
+  tipo varchar(10) [note: 'gasto, ingreso']
+  categoria varchar(100) [note: 'semillas, fertilizantes, mano_obra, venta, etc.']
+  descripcion text
+  monto decimal(12,2)
+  fecha date
+  metodo_pago varchar(50)
+  comprobante_url varchar(500) [null]
+  created_at timestamp [default: `now()`]
+  updated_at timestamp
+}
+
+Table conversaciones {
+  id int [pk, increment]
+  user_id int [ref: > users.id]
+  titulo varchar(255)
+  created_at timestamp [default: `now()`]
+  updated_at timestamp
+}
+
+Table mensajes {
+  id int [pk, increment]
+  conversacion_id int [ref: > conversaciones.id]
+  rol varchar(10) [note: 'user, assistant']
+  contenido text
+  metadata json [null, note: 'información adicional del contexto']
+  created_at timestamp [default: `now()`]
+  updated_at timestamp
+}
+
+Table programacion_riego {
+  id int [pk, increment]
+  cultivo_id int [ref: > cultivos.id]
+  fecha_programada datetime
+  tipo_riego varchar(50)
+  estado varchar(20) [note: 'programado, ejecutado, cancelado']
+  fecha_ejecutado datetime [null]
+  observaciones text
+  created_at timestamp [default: `now()`]
+  updated_at timestamp
+}
+
+Table predicciones_rendimiento {
+  id int [pk, increment]
+  cultivo_id int [ref: > cultivos.id]
+  fecha_prediccion date
+  rendimiento_predicho decimal(10,2) [note: 'kg/hectárea']
+  confianza_prediccion decimal(5,2) [note: 'porcentaje 0-100']
+  factores_considerados json [note: 'clima, suelo, historial, etc.']
+  algoritmo_usado varchar(100)
+  created_at timestamp [default: `now()`]
+  updated_at timestamp
+}
+
+
+
+Table configuraciones_usuario {
+  id int [pk, increment]
+  user_id int [ref: - users.id, note: 'relación 1:1']
+  notificaciones_email boolean [default: true]
+  notificaciones_push boolean [default: true]
+  dashboard_config json [note: 'configuración personalizada del dashboard']
+  created_at timestamp [default: `now()`]
+  updated_at timestamp
+}
