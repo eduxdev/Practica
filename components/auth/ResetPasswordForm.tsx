@@ -10,6 +10,7 @@ import {
   FieldLabel,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp"
 import { Progress } from "@/components/ui/progress"
 import { Spinner } from "@/components/ui/spinner"
 import { toast } from "sonner"
@@ -17,12 +18,15 @@ import { z } from 'zod'
 import { EyeOpenIcon, EyeClosedIcon } from '@radix-ui/react-icons'
 
 const resetPasswordSchema = z.object({
-  correo: z.string().email(),
+  correo: z
+    .string()
+    .email('Debe ser un correo electrónico válido')
+    .toLowerCase()
+    .trim(),
   codigo: z
     .string()
-    .min(4, 'El código debe tener al menos 4 dígitos')
-    .max(6, 'El código debe tener máximo 6 dígitos')
-    .regex(/^[0-9]+$/, 'El código solo puede contener números'),
+    .length(6, 'El código debe tener exactamente 6 dígitos')
+    .regex(/^[0-9]{6}$/, 'El código solo puede contener números'),
   password: z
     .string()
     .min(6, 'La contraseña debe tener al menos 6 caracteres'),
@@ -86,13 +90,13 @@ export function ResetPasswordForm({
     
     if (strength < 40) {
       label = 'Débil'
-      color = 'bg-red-500'
+      color = 'bg-gray-100'
     } else if (strength < 60) {
       label = 'Media'
-      color = 'bg-yellow-500'
+      color = 'bg-y'
     } else {
       label = 'Fuerte'
-      color = 'bg-green-500'
+      color = 'bg-gray-250'
     }
 
     return { strength, label, color }
@@ -110,6 +114,19 @@ export function ResetPasswordForm({
       setErrors(prev => ({
         ...prev,
         [name]: ''
+      }))
+    }
+  }
+
+  // Función separada para manejar cambios en el código OTP
+  const handleOTPChange = (value: string) => {
+    setFormData(prev => ({ ...prev, codigo: value }))
+    
+    // Limpiar error del código cuando el usuario empiece a escribir
+    if (errors.codigo) {
+      setErrors(prev => ({
+        ...prev,
+        codigo: ''
       }))
     }
   }
@@ -200,33 +217,34 @@ export function ResetPasswordForm({
           <p className="text-muted-foreground text-sm text-balance">
             Ingresa el código que recibiste por SMS y tu nueva contraseña
           </p>
-          <p className="text-xs text-muted-foreground">
-            Código enviado a: <span className="font-medium">{correo}</span>
-          </p>
+
         </div>
         
         <Field>
           <FieldLabel htmlFor="codigo">Código SMS</FieldLabel>
-          <Input 
-            id="codigo"
-            name="codigo"
-            type="text" 
-            placeholder="123456" 
-            value={formData.codigo}
-            onChange={handleChange}
-            required 
-            disabled={isLoading}
-            maxLength={6}
-            className={cn(
-              "text-center text-lg tracking-widest",
-              errors.codigo && "border-red-500 focus-visible:ring-red-500"
-            )}
-          />
+          <div className="flex justify-center">
+            <InputOTP
+              maxLength={6}
+              value={formData.codigo}
+              onChange={handleOTPChange}
+              disabled={isLoading}
+              className={cn(errors.codigo && "border-red-500")}
+            >
+              <InputOTPGroup>
+                <InputOTPSlot index={0} />
+                <InputOTPSlot index={1} />
+                <InputOTPSlot index={2} />
+                <InputOTPSlot index={3} />
+                <InputOTPSlot index={4} />
+                <InputOTPSlot index={5} />
+              </InputOTPGroup>
+            </InputOTP>
+          </div>
           {errors.codigo && (
-            <p className="text-xs text-red-500 mt-1">{errors.codigo}</p>
+            <p className="text-xs text-red-500 mt-1 text-center">{errors.codigo}</p>
           )}
-          <FieldDescription className="text-xs text-muted-foreground">
-            Ingresa el código de 4-6 dígitos que recibiste por SMS
+          <FieldDescription className="text-xs text-muted-foreground text-center">
+            Ingresa el código de 6 dígitos que recibiste por SMS
           </FieldDescription>
         </Field>
 
@@ -268,9 +286,9 @@ export function ResetPasswordForm({
               <div className="flex items-center justify-between text-xs">
                 <span className={cn(
                   "font-medium",
-                  passwordStrength.strength < 40 && "text-red-500",
-                  passwordStrength.strength >= 40 && passwordStrength.strength < 60 && "text-yellow-500",
-                  passwordStrength.strength >= 60 && "text-green-500"
+                  passwordStrength.strength < 40 && "text-gray-100",
+                  passwordStrength.strength >= 40 && passwordStrength.strength < 70 && "text-gray-250",
+                  passwordStrength.strength >= 60 && "text-gray-250"
                 )}>
                   {passwordStrength.label}
                 </span>

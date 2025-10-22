@@ -19,6 +19,8 @@ const forgotPasswordSchema = z.object({
     .string()
     .email('Debe ser un correo electrónico válido')
     .min(1, 'El correo es obligatorio')
+    .toLowerCase()
+    .trim()
 })
 
 interface ForgotPasswordFormProps extends React.ComponentProps<"form"> {
