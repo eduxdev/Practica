@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
@@ -157,12 +158,12 @@ export function LoginForm({
         <Field>
           <div className="flex items-center">
             <FieldLabel htmlFor="password">Contraseña</FieldLabel>
-            <a
-              href="#"
-              className="ml-auto text-sm underline-offset-4 hover:underline"
+            <Link
+              href="/auth/forgot-password"
+              className="ml-auto text-sm underline-offset-4 hover:underline text-primary"
             >
               ¿Olvidaste tu contraseña?
-            </a>
+            </Link>
           </div>
           <div className="relative">
             <Input 
