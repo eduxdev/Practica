@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
 import { z } from 'zod'
+import twilio from 'twilio'
 
 const forgotPasswordSchema = z.object({
   correo: z
     .string()
     .email('Debe ser un correo electrónico válido')
     .min(1, 'El correo es obligatorio')
+    .toLowerCase()
+    .trim()
 })
 
 // Función para generar código aleatorio de 6 dígitos
@@ -20,16 +23,42 @@ function maskPhoneNumber(telefono: string): string {
   return `***-***-${telefono.slice(-4)}`
 }
 
-// Simulación de envío de SMS (en producción usarías Twilio, AWS SNS, etc.)
+// Configurar cliente de Twilio
+const twilioClient = twilio(
+  process.env.TWILIO_ACCOUNT_SID,
+  process.env.TWILIO_AUTH_TOKEN
+)
+
+// Función para enviar SMS usando Twilio
 async function sendSMS(telefono: string, codigo: string): Promise<boolean> {
-  // TODO: Implementar servicio real de SMS
-  // Por ahora solo simulamos el envío
-  console.log(`📱 SMS enviado a ${telefono}: Tu código de recuperación es: ${codigo}`)
-  
-  // Simular delay de envío
-  await new Promise(resolve => setTimeout(resolve, 1000))
-  
-  return true
+  try {
+    // Validar que las credenciales de Twilio estén configuradas
+    if (!process.env.TWILIO_ACCOUNT_SID || !process.env.TWILIO_AUTH_TOKEN || !process.env.TWILIO_PHONE_NUMBER) {
+      console.error('Credenciales de Twilio no configuradas')
+      throw new Error('Servicio SMS no configurado')
+    }
+
+    // Enviar SMS usando Twilio
+    const message = await twilioClient.messages.create({
+      body: `Tu código de recuperación es: ${codigo}. Válido por 15 minutos.`,
+      from: process.env.TWILIO_PHONE_NUMBER,
+      to: `+52${telefono}` // +52 es el código de país para México
+    })
+
+    console.log(`✅ SMS enviado exitosamente. SID: ${message.sid}`)
+    return true
+
+  } catch (error) {
+    console.error('Error enviando SMS con Twilio:', error)
+    
+    // Si estamos en desarrollo y Twilio falla, usar simulación
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`📱 [SIMULACIÓN] SMS a ${telefono}: Tu código de recuperación es: ${codigo}`)
+      return true
+    }
+    
+    throw error
+  }
 }
 
 export async function POST(request: NextRequest) {
@@ -91,21 +120,22 @@ export async function POST(request: NextRequest) {
     const resetCode = generateResetCode()
     const expiresAt = new Date(Date.now() + 15 * 60 * 1000) // 15 minutos
 
-    // Guardar código en la base de datos (necesitaremos crear una tabla para esto)
-    // Por ahora lo guardamos en memoria temporal (en producción usar Redis o BD)
-    
-    // Crear o actualizar registro de recuperación
+    // Primero, invalidar códigos anteriores del usuario
+    await supabaseAdmin
+      .from('password_resets')
+      .update({ used: true })
+      .eq('user_id', user.id)
+      .eq('used', false)
+
+    // Crear nuevo registro de recuperación
     const { error: resetError } = await supabaseAdmin
       .from('password_resets')
-      .upsert({
+      .insert({
         user_id: user.id,
         correo: user.correo,
         codigo: resetCode,
         expires_at: expiresAt.toISOString(),
-        used: false,
-        created_at: new Date().toISOString()
-      }, {
-        onConflict: 'user_id'
+        used: false
       })
 
     if (resetError) {

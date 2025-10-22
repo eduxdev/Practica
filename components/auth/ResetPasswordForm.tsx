@@ -17,7 +17,11 @@ import { z } from 'zod'
 import { EyeOpenIcon, EyeClosedIcon } from '@radix-ui/react-icons'
 
 const resetPasswordSchema = z.object({
-  correo: z.string().email(),
+  correo: z
+    .string()
+    .email('Debe ser un correo electrónico válido')
+    .toLowerCase()
+    .trim(),
   codigo: z
     .string()
     .min(4, 'El código debe tener al menos 4 dígitos')

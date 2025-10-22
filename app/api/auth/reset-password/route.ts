@@ -7,7 +7,9 @@ const resetPasswordSchema = z.object({
   correo: z
     .string()
     .email('Debe ser un correo electrónico válido')
-    .min(1, 'El correo es obligatorio'),
+    .min(1, 'El correo es obligatorio')
+    .toLowerCase()
+    .trim(),
   codigo: z
     .string()
     .min(4, 'El código debe tener al menos 4 dígitos')
