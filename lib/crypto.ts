@@ -37,7 +37,7 @@ export function encryptAES(data: string, password: string) {
 }
 
 // Descifrado AES-256-GCM
-export function decryptAES(encryptedData: any, password: string) {
+export function decryptAES(encryptedData: { encrypted: string; iv: string; authTag: string }, password: string) {
   const algorithm = 'aes-256-gcm'
   const key = crypto.scryptSync(password, 'salt', 32)
   
@@ -87,7 +87,7 @@ export function verifyRSASignature(data: string, signature: string, publicKeyPem
 }
 
 // Generar certificado digital simple
-export function generateCertificate(commonName: string, keyPair: any) {
+export function generateCertificate(commonName: string, keyPair: { publicKey: forge.pki.PublicKey; privateKey: forge.pki.PrivateKey }) {
   const cert = forge.pki.createCertificate()
   
   cert.publicKey = keyPair.publicKey
@@ -120,7 +120,7 @@ export function generateCertificate(commonName: string, keyPair: any) {
   cert.setIssuer(attrs)
   
   // Auto-firmar el certificado
-  cert.sign(keyPair.privateKey)
+  cert.sign(keyPair.privateKey as forge.pki.rsa.PrivateKey, forge.md.sha256.create())
   
   return {
     cert: forge.pki.certificateToPem(cert),

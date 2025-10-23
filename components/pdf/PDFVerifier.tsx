@@ -208,7 +208,7 @@ export function PDFVerifier() {
                 </li>
                 <li className="flex items-start gap-1.5">
                   <span className="text-blue-500 dark:text-blue-400">•</span>
-                  <span>Usa el botón "Cargar Archivo" para subir el archivo JSON de verificación</span>
+                  <span>Usa el botón {'"'}Cargar Archivo{'"'} para subir el archivo JSON de verificación</span>
                 </li>
                 <li className="flex items-start gap-1.5">
                   <span className="text-blue-500 dark:text-blue-400">•</span>
