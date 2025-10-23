@@ -113,6 +113,7 @@ export const PixelImage = ({
             transitionDuration: `${pixelFadeInDuration}ms`,
           }}
         >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={src}
             alt={`Pixel image piece ${index + 1}`}
