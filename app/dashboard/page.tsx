@@ -8,6 +8,12 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { AppSidebar } from '@/components/dashboard/app-sidebar'
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
 import { Separator } from '@/components/ui/separator'
+import PDFGenerator from '@/components/pdf/PDFGenerator'
+import PDFSigner from '@/components/pdf/PDFSigner'
+import PDFVerifier from '@/components/pdf/PDFVerifier'
+import KeyManager from '@/components/pdf/KeyManager'
+import { UserProfile } from '@/components/dashboard/UserProfile'
+import { KeysProvider } from '@/contexts/KeysContext'
 import { useRouter } from 'next/navigation'
 
 interface User {
@@ -21,6 +27,7 @@ interface User {
 
 export default function Dashboard() {
   const [user, setUser] = useState<User | null>(null)
+  const [activeSection, setActiveSection] = useState('generate')
   const router = useRouter()
 
   useEffect(() => {
@@ -56,127 +63,80 @@ export default function Dashboard() {
     })
   }
 
+  const renderContent = () => {
+    switch (activeSection) {
+      case 'generate':
+        return <PDFGenerator />
+      case 'sign':
+        return <PDFSigner />
+      case 'verify':
+        return <PDFVerifier />
+      case 'keys':
+        return <KeyManager />
+      case 'profile':
+        return <UserProfile user={user!} />
+      default:
+        return <PDFGenerator />
+    }
+  }
+
+  const getSectionTitle = () => {
+    switch (activeSection) {
+      case 'generate':
+        return 'Generar Documento PDF'
+      case 'sign':
+        return 'Firmar Documento PDF'
+      case 'verify':
+        return 'Verificar Firma Digital'
+      case 'keys':
+        return 'Gestión de Claves RSA'
+      case 'profile':
+        return 'Perfil de Usuario'
+      default:
+        return 'Sistema de Firma Digital'
+    }
+  }
+
+  const getSectionDescription = () => {
+    switch (activeSection) {
+      case 'generate':
+        return 'Crea documentos PDF que podrás firmar digitalmente'
+      case 'sign':
+        return 'Añade tu firma digital a documentos PDF para garantizar autenticidad'
+      case 'verify':
+        return 'Verifica la autenticidad e integridad de firmas digitales'
+      case 'keys':
+        return 'Administra tus claves criptográficas RSA para firma digital'
+      case 'profile':
+        return 'Información y configuración de tu cuenta'
+      default:
+        return 'Herramientas avanzadas de criptografía y firma digital'
+    }
+  }
+
   return (
-    <SidebarProvider>
-      <AppSidebar user={user} />
-      <SidebarInset>
-        <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
-          <SidebarTrigger className="-ml-1" />
-          <Separator orientation="vertical" className="mr-2 h-4" />
-          <div className="flex items-center gap-2">
-            <h1 className="text-xl font-semibold">Dashboard</h1>
+    <KeysProvider>
+      <SidebarProvider>
+        <AppSidebar 
+          user={user} 
+          activeSection={activeSection}
+          onSectionChange={setActiveSection}
+        />
+        <SidebarInset>
+          <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
+            <SidebarTrigger className="-ml-1" />
+            <Separator orientation="vertical" className="mr-2 h-4" />
+            <div className="flex flex-col">
+              <h1 className="text-lg font-semibold">{getSectionTitle()}</h1>
+              <p className="text-xs text-muted-foreground">{getSectionDescription()}</p>
+            </div>
+          </header>
+          
+          <div className="flex flex-1 flex-col gap-4 p-4 md:p-6">
+            {renderContent()}
           </div>
-        </header>
-        
-        <div className="flex flex-1 flex-col gap-4 p-4 md:p-6">
-          {/* Welcome Section */}
-          <div className="mb-4">
-            <h2 className="text-2xl font-bold text-gray-900">
-              ¡Bienvenido, {user.nombre}!
-            </h2>
-            <p className="text-gray-600 mt-1">
-              Panel de control de tu cuenta
-            </p>
-          </div>
-
-          {/* User Profile Card */}
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            <Card className="md:col-span-2">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-3">
-                  <Avatar className="h-12 w-12">
-                    <AvatarFallback className="bg-primary text-primary-foreground">
-                      {getInitials(user.nombre, user.apellidos)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <h3 className="text-xl font-semibold">
-                      {user.nombre} {user.apellidos}
-                    </h3>
-                    <p className="text-sm text-muted-foreground">
-                      {user.correo}
-                    </p>
-                  </div>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">
-                      Edad
-                    </p>
-                    <p className="text-lg font-semibold">{user.edad} años</p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">
-                      ID de Usuario
-                    </p>
-                    <Badge variant="secondary">#{user.id}</Badge>
-                  </div>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">
-                    Miembro desde
-                  </p>
-                  <p className="text-lg font-semibold">
-                    {formatDate(user.createdAt)}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Stats Card */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Estadísticas</CardTitle>
-                <CardDescription>
-                  Información de tu cuenta
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-green-600">✓</div>
-                  <p className="text-sm text-muted-foreground">
-                    Cuenta Verificada
-                  </p>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-blue-600">1</div>
-                  <p className="text-sm text-muted-foreground">
-                    Sesiones Activas
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Quick Actions */}
-          <Card className="mt-2">
-            <CardHeader>
-              <CardTitle>Acciones Rápidas</CardTitle>
-              <CardDescription>
-                Gestiona tu cuenta y configuración
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-4 md:grid-cols-3">
-                <Button variant="outline" className="h-20 flex-col gap-2">
-                  <div className="text-xl">👤</div>
-                  <span>Editar Perfil</span>
-                </Button>
-                <Button variant="outline" className="h-20 flex-col gap-2">
-                  <div className="text-xl">🔒</div>
-                  <span>Cambiar Contraseña</span>
-                </Button>
-                <Button variant="outline" className="h-20 flex-col gap-2">
-                  <div className="text-xl">⚙</div>
-                  <span>Configuración</span>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </SidebarInset>
-    </SidebarProvider>
+        </SidebarInset>
+      </SidebarProvider>
+    </KeysProvider>
   )
 }
