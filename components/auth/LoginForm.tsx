@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { cn } from "@/lib/utils"
@@ -17,6 +17,7 @@ import { toast } from "sonner"
 import { z } from 'zod'
 import { loginSchema, type LoginFormData } from '@/lib/validations/auth'
 import { EyeOpenIcon, EyeClosedIcon } from '@radix-ui/react-icons'
+import ReCAPTCHA from 'react-google-recaptcha'
 
 interface LoginFormProps extends React.ComponentProps<"form"> {
   onToggleForm?: () => void
@@ -35,6 +36,8 @@ export function LoginForm({
   const [showPassword, setShowPassword] = useState(false)
   const [errors, setErrors] = useState<Partial<Record<keyof LoginFormData, string>>>({})
   const router = useRouter()
+  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null)
+  const recaptchaRef = useRef<ReCAPTCHA>(null)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -52,9 +55,20 @@ export function LoginForm({
     }
   }
 
+  const handleRecaptchaChange = (token: string | null) => {
+    setRecaptchaToken(token)
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
+
+    // Verificar reCAPTCHA
+    if (!recaptchaToken) {
+      toast.error('Por favor completa la verificación reCAPTCHA')
+      setIsLoading(false)
+      return
+    }
 
     // Validar con Zod
     try {
@@ -92,7 +106,8 @@ export function LoginForm({
         },
         body: JSON.stringify({
           correo: formData.correo,
-          password: formData.password
+          password: formData.password,
+          recaptchaToken: recaptchaToken // Agregar esto
         }),
       })
 
@@ -118,6 +133,12 @@ export function LoginForm({
       toast.error(errorMessage, {
         description: 'Por favor verifica tus credenciales.',
       })
+      
+      // Resetear reCAPTCHA en caso de error
+      if (recaptchaRef.current) {
+        recaptchaRef.current.reset()
+        setRecaptchaToken(null)
+      }
     } finally {
       setIsLoading(false)
     }
@@ -201,7 +222,18 @@ export function LoginForm({
           )}
         </Field>
         <Field>
-          <Button type="submit" disabled={isLoading}>
+          <div className="flex justify-center">
+            <ReCAPTCHA
+              ref={recaptchaRef}
+              sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY!}
+              onChange={handleRecaptchaChange}
+              theme="light"
+              hl="es"
+            />
+          </div>
+        </Field>
+        <Field>
+          <Button type="submit" disabled={isLoading || !recaptchaToken}>
             {isLoading ? (
               <>
                 <Spinner className="mr-2" />
