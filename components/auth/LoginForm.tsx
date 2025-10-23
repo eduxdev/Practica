@@ -117,8 +117,8 @@ export function LoginForm({
         throw new Error(data.error || 'Error al iniciar sesión')
       }
       
-      // Guardar datos del usuario en localStorage (temporal)
-      localStorage.setItem('user', JSON.stringify(data.user))
+      // ✅ JWT se almacena automáticamente en cookie HttpOnly
+      // Ya no necesitamos localStorage - más seguro!
       
       toast.success('¡Inicio de sesión exitoso!', {
         description: 'Bienvenido de vuelta.',

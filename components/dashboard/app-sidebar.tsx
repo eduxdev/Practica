@@ -51,10 +51,21 @@ export function AppSidebar({ user, activeSection = 'generate', onSectionChange }
     return `${nombre.charAt(0)}${apellidos.charAt(0)}`.toUpperCase()
   }
 
-  const handleLogout = () => {
-    localStorage.removeItem('user')
-    toast.success('Sesión cerrada exitosamente')
-    router.push('/auth')
+  const handleLogout = async () => {
+    try {
+      // Llamar a la API de logout para eliminar la cookie
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include'
+      })
+      
+      toast.success('Sesión cerrada exitosamente')
+      router.push('/auth')
+    } catch (error) {
+      console.error('Error en logout:', error)
+      // Aunque falle la API, redirigir al login
+      router.push('/auth')
+    }
   }
 
   const menuItems = [
