@@ -31,14 +31,34 @@ export default function Dashboard() {
   const router = useRouter()
 
   useEffect(() => {
-    // Obtener datos del usuario desde localStorage (temporal)
-    const userData = localStorage.getItem('user')
-    if (userData) {
-      setUser(JSON.parse(userData))
-    } else {
-      // Si no hay usuario, redirigir al login
-      router.push('/auth')
+    // Obtener datos del usuario desde JWT cookie via API
+    const fetchUser = async () => {
+      try {
+        const response = await fetch('/api/auth/me', {
+          credentials: 'include' // Importante: incluir cookies
+        })
+        
+        if (response.ok) {
+          const data = await response.json()
+          setUser({
+            id: data.user.id,
+            nombre: data.user.name.split(' ')[0] || data.user.name,
+            apellidos: data.user.name.split(' ').slice(1).join(' ') || '',
+            correo: data.user.email,
+            edad: 0, // No disponible desde JWT
+            createdAt: new Date().toISOString() // Placeholder
+          })
+        } else {
+          // Si no está autenticado, redirigir al login
+          router.push('/auth')
+        }
+      } catch (error) {
+        console.error('Error obteniendo usuario:', error)
+        router.push('/auth')
+      }
     }
+    
+    fetchUser()
   }, [router])
 
   if (!user) {
