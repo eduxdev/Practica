@@ -44,7 +44,7 @@ export function PDFVerifier() {
         } else {
           toast.error('El archivo no contiene datos de firma válidos. Usa el archivo JSON generado al firmar el documento.')
         }
-      } catch (error) {
+      } catch {
         toast.error('Error al leer el archivo. Asegúrate de que sea un archivo JSON válido.')
       }
     }

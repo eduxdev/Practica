@@ -114,7 +114,7 @@ export function PDFGenerator() {
         </Button>
 
         <div className="text-sm text-muted-foreground bg-blue-50 dark:bg-blue-950 p-3 rounded-lg">
-          <strong>Consejo:</strong> Una vez generado el PDF, podrás subirlo en la sección "Firmar PDF" para añadir tu firma digital.
+          <strong>Consejo:</strong> Una vez generado el PDF, podrás subirlo en la sección {'"'}Firmar PDF{'"'} para añadir tu firma digital.
         </div>
       </CardContent>
     </Card>
