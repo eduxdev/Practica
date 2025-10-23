@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Badge } from '@/components/ui/badge'
-import { PenTool, Upload, Download, Key, Loader2, FileCheck, CheckCircle, Shield } from 'lucide-react'
+import { PenTool, Download, Key, Loader2, FileCheck, CheckCircle, Shield } from 'lucide-react'
 import { toast } from 'sonner'
 import { useKeys } from '@/contexts/KeysContext'
 
@@ -125,7 +125,7 @@ export function PDFSigner() {
         signatureInfo: result.signatureInfo,
         certificateInfo: result.certificateInfo,
         instructions: {
-          howToVerify: "Copia este JSON completo en la sección 'Verificar Firma Digital'",
+          howToVerify: `Copia este JSON completo en la sección 'Verificar Firma Digital'`,
           warning: "Este archivo contiene la información necesaria para verificar la autenticidad del documento firmado"
         }
       }
@@ -332,7 +332,7 @@ export function PDFSigner() {
                 <Key className="h-4 w-4 text-blue-600 dark:text-blue-500" />
               </div>
               <div className="text-sm text-blue-700 dark:text-blue-400">
-                <span className="font-medium">Consejo:</span> Puedes generar o importar claves en la sección "Gestión de Claves" para que se apliquen automáticamente aquí.
+                <span className="font-medium">Consejo:</span> Puedes generar o importar claves en la sección {'"'}Gestión de Claves{'"'} para que se apliquen automáticamente aquí.
               </div>
             </div>
           )}
@@ -419,7 +419,7 @@ export function PDFSigner() {
                   <CheckCircle className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                 </div>
                 <div>
-                  <strong>Para verificar la firma:</strong> Ve a la sección "Verificar Firma Digital" y carga el archivo JSON de verificación.
+                  <strong>Para verificar la firma:</strong> Ve a la sección {'"'}Verificar Firma Digital{'"'} y carga el archivo JSON de verificación.
                 </div>
               </div>
             </div>

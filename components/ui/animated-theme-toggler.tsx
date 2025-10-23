@@ -72,7 +72,7 @@ export const AnimatedThemeToggler = ({
           pseudoElement: "::view-transition-new(root)",
         }
       )
-    } catch (error) {
+    } catch {
       // Si algo falla, cambiar el tema sin animación
       setTheme(newTheme)
     }

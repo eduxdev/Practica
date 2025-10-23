@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
     const pdfBuffer = await createSamplePDF(content, title)
 
     // Retornar el PDF como respuesta
-    return new NextResponse(pdfBuffer, {
+    return new NextResponse(pdfBuffer as unknown as BodyInit, {
       status: 200,
       headers: {
         'Content-Type': 'application/pdf',

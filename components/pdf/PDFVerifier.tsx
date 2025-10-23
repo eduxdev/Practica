@@ -44,7 +44,7 @@ export function PDFVerifier() {
         } else {
           toast.error('El archivo no contiene datos de firma válidos. Usa el archivo JSON generado al firmar el documento.')
         }
-      } catch (error) {
+      } catch {
         toast.error('Error al leer el archivo. Asegúrate de que sea un archivo JSON válido.')
       }
     }
@@ -208,7 +208,7 @@ export function PDFVerifier() {
                 </li>
                 <li className="flex items-start gap-1.5">
                   <span className="text-blue-500 dark:text-blue-400">•</span>
-                  <span>Usa el botón "Cargar Archivo" para subir el archivo JSON de verificación</span>
+                  <span>Usa el botón {'"'}Cargar Archivo{'"'} para subir el archivo JSON de verificación</span>
                 </li>
                 <li className="flex items-start gap-1.5">
                   <span className="text-blue-500 dark:text-blue-400">•</span>
